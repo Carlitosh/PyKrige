@@ -491,7 +491,7 @@ class OrdinaryKriging:
         return self.Q1, self.Q2, self.cR, self.RMSE
 
     def print_statistics(self):
-        """Prints out the Q1, Q2, and cR statistics for the variogram fit.
+        """Prints out the Q1, Q2, cR and RMSE statistics for the variogram fit.
         NOTE that ideally Q1 is close to zero, Q2 is close to 1,
         and cR is as small as possible.
         """
