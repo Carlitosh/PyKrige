@@ -229,8 +229,8 @@ class OrdinaryKriging:
                 warnings.warn("Anisotropy is not compatible with geographic "
                               "coordinates. Ignoring user set anisotropy.",
                               UserWarning)
-            self.XCENTER= 0.0
-            self.YCENTER= 0.0
+            self.XCENTER = 0.0
+            self.YCENTER = 0.0
             self.anisotropy_scaling = 1.0
             self.anisotropy_angle = 0.0
             self.X_ADJUSTED = self.X_ORIG
@@ -287,12 +287,14 @@ class OrdinaryKriging:
             self.Q1 = core.calcQ1(self.epsilon)
             self.Q2 = core.calcQ2(self.epsilon)
             self.cR = core.calc_cR(self.Q2, self.sigma)
+            self.RMSE = core.calc_RMSE(self.delta)
             if self.verbose:
                 print("Q1 =", self.Q1)
                 print("Q2 =", self.Q2)
-                print("cR =", self.cR, '\n')
+                print("cR =", self.cR)
+                print("RMSE =", self.RMSE, '\n')
         else:
-            self.delta, self.sigma, self.epsilon, self.Q1, self.Q2, self.cR = [None]*6
+            self.delta, self.sigma, self.epsilon, self.Q1, self.Q2, self.cR, self.RMSE = [None]*7
 
     def update_variogram_model(self, variogram_model, variogram_parameters=None,
                                variogram_function=None, nlags=6, weight=False,
@@ -428,10 +430,12 @@ class OrdinaryKriging:
         self.Q1 = core.calcQ1(self.epsilon)
         self.Q2 = core.calcQ2(self.epsilon)
         self.cR = core.calc_cR(self.Q2, self.sigma)
+        self.RMSE = core.calc_cR(self.delta)
         if self.verbose:
             print("Q1 =", self.Q1)
             print("Q2 =", self.Q2)
-            print("cR =", self.cR, '\n')
+            print("cR =", self.cR)
+            print("RMSE =", self.RMSE, '\n')
 
     def display_variogram_model(self):
         """Displays variogram model with the actual binned data."""
@@ -481,10 +485,10 @@ class OrdinaryKriging:
         plt.show()
 
     def get_statistics(self):
-        """Returns the Q1, Q2, and cR statistics for the variogram fit
+        """Returns the Q1, Q2, cR y RMSE statistics for the variogram fit
         (in that order). No arguments.
         """
-        return self.Q1, self.Q2, self.cR
+        return self.Q1, self.Q2, self.cR, self.RMSE
 
     def print_statistics(self):
         """Prints out the Q1, Q2, and cR statistics for the variogram fit.
@@ -494,6 +498,7 @@ class OrdinaryKriging:
         print("Q1 =", self.Q1)
         print("Q2 =", self.Q2)
         print("cR =", self.cR)
+        print("RMSE =", self.RMSE)
 
     def _get_kriging_matrix(self, n):
         """Assembles the kriging matrix."""
@@ -503,8 +508,8 @@ class OrdinaryKriging:
                                  self.Y_ADJUSTED[:, np.newaxis]), axis=1)
             d = cdist(xy, xy, 'euclidean')
         elif self.coordinates_type == 'geographic':
-            d = core.great_circle_distance(self.X_ADJUSTED[:,np.newaxis],
-                                           self.Y_ADJUSTED[:,np.newaxis],
+            d = core.great_circle_distance(self.X_ADJUSTED[:, np.newaxis],
+                                           self.Y_ADJUSTED[:, np.newaxis],
                                            self.X_ADJUSTED, self.Y_ADJUSTED)
         a = np.zeros((n+1, n+1))
         a[:n, :n] = - self.variogram_function(self.variogram_model_parameters,
@@ -802,8 +807,8 @@ class OrdinaryKriging:
             if self.coordinates_type == 'geographic':
                 # Between the nearest neighbours from Euclidean search,
                 # calculate the great circle distance using the standard method:
-                x_points = np.tile(xpts[:,np.newaxis],(1,n_closest_points))
-                y_points = np.tile(ypts[:,np.newaxis],(1,n_closest_points))
+                x_points = np.tile(xpts[:, np.newaxis], (1, n_closest_points))
+                y_points = np.tile(ypts[:, np.newaxis], (1, n_closest_points))
                 bd = core.great_circle_distance(x_points, y_points,
                                                 self.X_ADJUSTED[bd_idx],
                                                 self.Y_ADJUSTED[bd_idx])
@@ -823,8 +828,8 @@ class OrdinaryKriging:
             if self.coordinates_type == 'euclidean':
                 bd = cdist(xy_points,  xy_data, 'euclidean')
             elif self.coordinates_type == 'geographic':
-                bd = core.great_circle_distance(xpts[:,np.newaxis],
-                                                ypts[:,np.newaxis],
+                bd = core.great_circle_distance(xpts[:, np.newaxis],
+                                                ypts[:, np.newaxis],
                                                 self.X_ADJUSTED, self.Y_ADJUSTED)
 
             if backend == 'vectorized':

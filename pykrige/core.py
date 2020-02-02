@@ -10,6 +10,9 @@ PyKrige
 Code by Benjamin S. Murphy and the PyKrige Developers
 bscott.murphy@gmail.com
 
+Modified by Carlos Hernandez
+carlitoshernandez20@gmail.com
+
 Summary
 -------
 Methods used by multiple classes.
@@ -724,9 +727,9 @@ def _find_statistics(X, y, variogram_function,
     # whereas delta can be either positive or negative
     delta = delta[sigma > eps]
     sigma = sigma[sigma > eps]
-    epsilon = delta/sigma
-
+    epsilon = delta/sigma    
     return delta, sigma, epsilon
+
 
 
 def calcQ1(epsilon):
@@ -742,3 +745,8 @@ def calcQ2(epsilon):
 def calc_cR(Q2, sigma):
     """Returns the cR statistic for the variogram fit (see [1])."""
     return Q2 * np.exp(np.sum(np.log(sigma**2))/sigma.shape[0])
+
+
+def calc_RMSE(delta):
+    """Returns the RMSE statistic for the variogram fit (see [1])."""
+    return np.sqrt(np.sum(np.power(delta, 2))/len(delta))
